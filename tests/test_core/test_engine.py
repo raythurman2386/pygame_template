@@ -20,7 +20,7 @@ def test_engine_settings(mock_engine):
     """Test engine settings initialization."""
     assert mock_engine.settings.music_enabled is True
     assert mock_engine.settings.sfx_enabled is True
-    assert mock_engine.settings.music_volume == 0.5
+    assert mock_engine.settings.music_volume == 0.8
     assert mock_engine.settings.master_volume == 1.0
     assert mock_engine.settings.fullscreen is False
 
