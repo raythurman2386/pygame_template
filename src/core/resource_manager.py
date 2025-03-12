@@ -1,4 +1,5 @@
 import pygame
+from ..utils.logger import GameLogger
 
 
 class ResourceManager:
@@ -8,6 +9,8 @@ class ResourceManager:
         self.images = {}
         self.sounds = {}
         self.fonts = {}
+        self.logger = GameLogger.get_logger("ResourceManager")
+        self.logger.info("Resource Manager initialized")
 
     def load_image(self, name, path, alpha=True):
         """Load an image and store it."""
@@ -17,47 +20,51 @@ class ResourceManager:
             else:
                 image = pygame.image.load(path).convert()
             self.images[name] = image
+            self.logger.debug(f"Loaded image: {name} from {path}")
             return image
-        except pygame.error as e:
-            print(f"Error loading image {path}: {e}")
-            return None
+        except (pygame.error, FileNotFoundError) as e:
+            self.logger.error(f"Error loading image {path}: {e}")
+            raise FileNotFoundError(f"No such file or directory: '{path}'")
 
     def get_image(self, name):
         """Retrieve a loaded image."""
-        return self.images.get(name)
+        image = self.images.get(name)
+        if image is None:
+            self.logger.warning(f"Image not found: {name}")
+        return image
 
     def load_sound(self, name, path):
         """Load a sound effect and store it."""
         try:
             sound = pygame.mixer.Sound(path)
             self.sounds[name] = sound
+            self.logger.debug(f"Loaded sound: {name} from {path}")
             return sound
-        except pygame.error as e:
-            print(f"Error loading sound {path}: {e}")
+        except (pygame.error, FileNotFoundError) as e:
+            self.logger.error(f"Error loading sound {path}: {e}")
             return None
 
     def get_sound(self, name):
         """Retrieve a loaded sound."""
-        return self.sounds.get(name)
+        sound = self.sounds.get(name)
+        if sound is None:
+            self.logger.warning(f"Sound not found: {name}")
+        return sound
 
     def load_font(self, name, path, size):
         """Load a font and store it."""
         try:
             font = pygame.font.Font(path, size)
             self.fonts[(name, size)] = font
+            self.logger.debug(f"Loaded font: {name} size {size} from {path}")
             return font
         except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading font {path}: {e}")
-            fallback_font = pygame.font.SysFont(None, size)
-            self.fonts[(name, size)] = fallback_font
-            return fallback_font
+            self.logger.error(f"Error loading font {path}: {e}")
+            return None
 
     def get_font(self, name, size):
-        """Retrieve a loaded font or create a system font if not found."""
+        """Retrieve a loaded font."""
         font = self.fonts.get((name, size))
         if font is None:
-            # If font isn't loaded yet, create a system font
-            print(f"Font '{name}' size {size} not found, using system font")
-            font = pygame.font.SysFont(None, size)
-            self.fonts[(name, size)] = font
+            self.logger.warning(f"Font '{name}' size {size} not found")
         return font
